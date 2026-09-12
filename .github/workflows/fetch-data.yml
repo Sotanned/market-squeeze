@@ -1,0 +1,94 @@
+name: Fetch commodity data
+
+on:
+  schedule:
+    - cron: "0 6 * * 6"
+  workflow_dispatch:
+    inputs:
+      probe_only:
+        description: "Report source reachability without writing a data file"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-data
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Detect default branch
+        id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DEFAULT_BRANCH="$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch 2>/dev/null || true)"
+          if [ -z "$DEFAULT_BRANCH" ]; then
+            DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          fi
+          if [ -z "$DEFAULT_BRANCH" ]; then
+            echo "could not determine default branch" >&2
+            exit 1
+          fi
+          echo "name=$DEFAULT_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "Default branch: $DEFAULT_BRANCH"
+
+      - name: Probe sources
+        continue-on-error: true
+        run: python scripts/fetch_data.py --probe
+
+      - name: Fetch data
+        if: ${{ inputs.probe_only != true }}
+        id: fetch
+        run: |
+          RUN_DATE="$(date -u +%Y-%m-%d)"
+          echo "run_date=$RUN_DATE" >> "$GITHUB_OUTPUT"
+          python scripts/fetch_data.py --out-dir data --date "$RUN_DATE"
+
+      - name: Commit and push
+        if: ${{ inputs.probe_only != true }}
+        env:
+          DEFAULT_BRANCH: ${{ steps.branch.outputs.name }}
+          RUN_DATE: ${{ steps.fetch.outputs.run_date }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout "$DEFAULT_BRANCH"
+          git pull --rebase --autostash origin "$DEFAULT_BRANCH"
+
+          git add data/
+          if git diff --cached --quiet; then
+            echo "No new data file to commit."
+            exit 0
+          fi
+          git commit -m "Data fetch $RUN_DATE"
+
+          for attempt in 1 2 3; do
+            if git push origin "HEAD:$DEFAULT_BRANCH"; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push failed (attempt $attempt); rebasing and retrying."
+            git pull --rebase --autostash origin "$DEFAULT_BRANCH" || true
+            sleep $((attempt * 5))
+          done
+          echo "Could not push data file." >&2
+          exit 1

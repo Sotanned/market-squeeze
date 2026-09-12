@@ -1,6 +1,6 @@
-# Weekly Supply Squeeze Report — 2026-09-13
+# Weekly Supply Squeeze Report — 2026-09-12 (run 2)
 
-**Note on filing date:** The prior report (`squeeze-report-2026-09-12.md`) and this run both fell on the same system date (2026-09-12) due to same-day execution. Per user direction, the 2026-09-12 report is treated as last week's baseline and this run is filed as 2026-09-13 to preserve one file per check-in.
+**Note on filing date:** This run and the baseline report (`squeeze-report-2026-09-12.md`) both executed on 2026-09-12. It is filed with a `-2` suffix under its real run date; it was originally misfiled as `squeeze-report-2026-09-13.md` and renamed. The 2026-09-12 baseline report is treated as last week's comparison basis.
 
 **Note on data access:** WebFetch to primary pages (lme.com, cmegroup.com, ice.com, icco.org, finance.yahoo.com, google.com/finance) was blocked by network egress this run. WebSearch snippets were used instead, and where independent snippets/aggregators disagreed on a figure, it is reported as "no fresh data" rather than picked, per instructions.
 
