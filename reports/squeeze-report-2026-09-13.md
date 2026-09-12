@@ -1,0 +1,54 @@
+# Weekly Supply Squeeze Report — 2026-09-13
+
+**Note on filing date:** The prior report (`squeeze-report-2026-09-12.md`) and this run both fell on the same system date (2026-09-12) due to same-day execution. Per user direction, the 2026-09-12 report is treated as last week's baseline and this run is filed as 2026-09-13 to preserve one file per check-in.
+
+**Note on data access:** WebFetch to primary pages (lme.com, cmegroup.com, ice.com, icco.org, finance.yahoo.com, google.com/finance) was blocked by network egress this run. WebSearch snippets were used instead, and where independent snippets/aggregators disagreed on a figure, it is reported as "no fresh data" rather than picked, per instructions.
+
+**Headline:** Most areas are unassessed again this week — copper, beef futures, and cocoa all returned conflicting or unverifiable figures, and data center capex has no new release. The one substantive development is in Gulf energy: the Strait of Hormuz conflict escalated (new US-Iran strikes Sept 8–10) with transit still ~90% below pre-crisis levels, but this week's price data (Brent unverified, JKM flat) doesn't independently confirm a tightening move, so it is marked Unclear rather than carried forward as Tightening.
+
+## Numbers Table
+
+| Area | Figure | This week | Last week | Direction | Source | Primary/Second-hand |
+|---|---|---|---|---|---|---|
+| Copper | LME warehouse stocks | no fresh data — sources disagreed (237,725t vs. a separate +63,000t on-warrant move, no total given) | 237,725 t (Sep 8, 2026) | n/a | [LME Insight weekly](https://www.lmeinsight.com/the-lme-weekly-review-1-4-september-2026/), [Northern Miner](https://www.northernminer.com/news/copper-inventories-surge-50-easing-lme-squeeze/1003894108/) | Second-hand |
+| Copper | COMEX warehouse stocks | no fresh data — sources disagreed materially (~675,000t vs. 733,653t vs. 458,034 short tons vs. ~650,000t across aggregators) | 458,034 short tons (Aug 3, 2026, stale) | n/a | [MacroMicro](https://en.macromicro.me/series/8742/copper-comex-warehouse-stock), [TheVaultReport](https://thevaultreport.com/metals/copper), [TradingKey](https://www.tradingkey.com/analysis/commodities/metal/261993589-copper-inp-comex-lme-tin-tradingkey) | Second-hand |
+| Copper | LME cash price | no fresh data — lme.com (primary) unreachable this run | no fresh data | n/a | [LME copper page](https://www.lme.com/metals/non-ferrous/lme-copper) | Primary (unverified — unreachable) |
+| Copper | LME cash vs 3-month gap | no fresh data — cannot compute without confirmed settlement figures | no fresh data | n/a | — | — |
+| Beef | CME live cattle, front month | no fresh data — search returned inconsistent figures (one snippet: 233.125; another undated: 60¢–$1.55 daily loss, cash $220–222) with no single confirmed print | 215.050 ¢/lb (Sep 12, 2026) | n/a | [CME live cattle quotes](https://www.cmegroup.com/markets/agriculture/livestock/live-cattle/quotes) | Primary (unverified — unreachable) |
+| Beef | CME feeder cattle, front month | no fresh data — most recent concrete figure found (~$355/cwt) is dated Feb 25, 2026, over a month old | 371.975 ¢/lb (Sep 12, 2026) | n/a | [CME feeder cattle calendar](https://www.cmegroup.com/markets/agriculture/livestock/feeder-cattle.calendar.html) | Primary (unverified — unreachable) |
+| Beef | USDA cattle inventory / heifer retention | no new release since Jul 24, 2026 report (next expected ~Jan 2027) | 94.2M head; heifer retention 3.80M head +2.7% y/y (Jul 24, 2026) | — | [USDA NASS](https://www.nass.usda.gov/Newsroom/2026/07-24-2026.php) | Primary |
+| Cocoa | ICE certified stocks | no fresh data — aggregators disagreed (727,526 bags vs. 3.41M bags "2-yr high") | no fresh data | n/a | [Barchart](https://www.barchart.com/cmdty/data/fundamental/explore/IC345DRW.CS), [CocoaIntel](https://www.cocoaintel.com/ice-certified-cocoa-stocks/) | Second-hand |
+| Cocoa | Front-month price | no fresh data — sources disagreed (~6,925 vs. ~5,961 for the same nominal contract) | no fresh data | n/a | TradingView, Yahoo Finance CC=F | Second-hand |
+| Cocoa | Front-vs-next-month gap | no fresh data — cannot compute without a confirmed front-month print | no fresh data | n/a | — | — |
+| Cocoa | ICCO global balance | no new release since August 2026 Quarterly Bulletin (2024/25 season surplus, 37,000 t) | Surplus, 37,000 t (Aug 2026 bulletin) | — | [ICCO statistics](https://www.icco.org/statistics/) | Primary (unverified — unreachable; confirmed via second-hand corroboration) |
+| Data center capex | Microsoft, Amazon, Alphabet, Meta | no new release since Q2 CY2026 reports (Jul 22–31, 2026); next expected ~late Oct 2026 | no fresh data (>6 weeks old, per last report) | — | [Microsoft IR](https://www.microsoft.com/en-us/investor/earnings/fy-2026-q3/press-release-webcast), [Alphabet Q2 filing](https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm) | Primary |
+| Gulf energy | Brent crude | no fresh data — sources disagreed ($104.26–$104.61 vs. one outlier at $108.54) | $104.61/bbl (Sep 12, 2026) | n/a | [Investing.com](https://www.investing.com/commodities/brent-oil), [PSU Connect](https://www.psuconnect.in/market/crude-oil-price-today-12-september-2026-brent-holds-near-104-wti-at-100), [OneValor](https://www.onevalor.com/oil-gas-prices/) | Second-hand |
+| Gulf energy | Asian LNG spot (JKM) | $24.81–24.82/MMBtu (Sep 10–11, 2026) | $24.81/MMBtu (Sep 11, 2026) | Steady (flat) | [TradingEconomics](https://tradingeconomics.com/commodity/liquefied-natural-gas-japan-korea), [OilPriceAPI](https://www.oilpriceapi.com/live/jkm-lng-price) | Second-hand |
+| Gulf energy | Strait of Hormuz transit | 6–12 ships/day, still ~85–93% below the ~85/day pre-crisis baseline; ~42 tankers queued as of Sep 9 (Sep 8–11, 2026) | ~6 ships/day vs. ~85/day baseline (Sep 6, 2026) | Steady-to-worse (new incidents, no recovery) | [Straits Daily Brief](https://straits.live/briefs/2026-09-08), [Al Jazeera](https://www.aljazeera.com/news/2026/9/9/why-us-iran-war-over-hormuz-is-threatening-the-gulfs-waters) | Second-hand |
+
+## Status
+
+- **Copper — Unclear.** No figure could be confirmed this week — LME and COMEX stock levels are disputed across aggregators, and cash/3-month prices are unreachable at the primary source, so premium or discount for immediate delivery cannot be assessed.
+- **Beef — Unclear.** CME live cattle and feeder cattle front-month prices could not be pinned to a single confirmed print this week (conflicting search snippets); USDA cattle inventory and heifer retention carry no new release since the July 24, 2026 report, so no status judgment applies to that sub-figure this week.
+- **Cocoa — Unclear.** ICE certified stocks and front-month futures both show materially conflicting figures across sources this week; ICCO's global balance carries no new release since the August 2026 Quarterly Bulletin.
+- **Data center spending — no new release since Jul 22–31, 2026** (Microsoft, Amazon, Alphabet, Meta Q2 CY2026 reports); no status marked per instructions.
+- **Gulf energy — Unclear.** Asian LNG (JKM) is essentially flat at $24.81–24.82/MMBtu versus last week's $24.81, and Brent could not be confirmed this week (sources disagreed by roughly 4%); the Strait of Hormuz remains severely disrupted (6–12 ships/day vs. an 85/day pre-crisis baseline, ~42 tankers queued Sep 9) with new US-Iran strikes reported Sep 8–10, but this week's price data alone doesn't independently confirm a tightening move, so last week's Tightening call is not repeated without fresh price support.
+
+## What Changed
+
+**Gulf energy — Hormuz escalation, no price confirmation.** The Strait of Hormuz situation worsened in kind rather than in degree this week: on Sep 8 the US reportedly struck five Iranian tankers, prompting an Iranian strike on Jordan's al-Azraq airbase, and on Sep 10 Iran said it targeted two US Navy vessels, eight tankers, and 10 other ships. Transit stayed in the same depressed 6–12 ships/day band seen last week (still roughly 85–93% below the 85/day pre-crisis baseline), with about 42 tankers queued as of Sep 9. Iran has agreed to meet GCC and Iraqi foreign ministers in Oman on Sep 14 to discuss shipping arrangements, though no ceasefire has been reached. Asian LNG spot (JKM) held flat at ~$24.81/MMBtu, and Brent crude could not be independently confirmed this week due to source disagreement, so the price leg of the squeeze is not confirmed to have moved even though the shipping disruption itself intensified.
+
+All other areas (copper, beef, cocoa, data center spending) carry no confirmed change this week — either the data was unverifiable (conflicting aggregators, blocked primary sources) or there was no new release to report.
+
+## Ending Signals
+
+Gulf energy is not marked Tightening this week, so no ending-signals commentary applies under STEP 5's criteria. For reference, if the area returns to a confirmed Tightening call in a future week, signs of resolution to watch for would include: Strait of Hormuz transit volumes recovering toward the ~85 ships/day pre-crisis baseline, a durable ceasefire following the Sep 14 Oman talks, war-risk insurance premiums declining from their last-confirmed elevated level (7.5–10% of hull value, mid-to-late July 2026), or Brent/JKM prices falling back from current levels.
+
+## Data Gaps
+
+- **Copper:** LME warehouse stocks, COMEX warehouse stocks, LME cash price, and LME cash-vs-3-month gap — all unassessed this week (conflicting aggregators or primary source unreachable).
+- **Beef:** CME live cattle and feeder cattle front-month futures — unassessed this week (conflicting/stale search results); USDA cattle inventory and heifer retention have had no new release since Jul 24, 2026 (next expected ~Jan 2027).
+- **Cocoa:** ICE certified stocks and front-month/next-month futures prices — all unassessed this week (conflicting aggregator figures, ice.com unreachable); ICCO global balance has had no new release since the August 2026 Quarterly Bulletin.
+- **Data center spending:** Microsoft, Amazon, Alphabet, and Meta — no new earnings release since Q2 CY2026 (reported Jul 22–31, 2026); next reports expected ~late October 2026.
+- **Gulf energy:** Brent crude — unassessed this week (sources disagreed by ~4%); Strait of Hormuz war-risk insurance premium — last confirmed 7.5–10% of hull value in mid-to-late July 2026, no fresher figure found this week.
+- **Exposure tickers (Cheniere Energy/LNG, ConocoPhillips/COP, Frontline/FRO, Korea Gas/036460.KS):** attempted to verify current closing prices for a Gulf-energy exposure list, but all four returned materially conflicting figures across sources with no single confirmed close/date; since Gulf energy itself is marked Unclear rather than Tightening/Easing this week, no exposure list is produced (per instructions, exposure lists are skipped for Unclear/Steady areas and for areas that could not be verified).
