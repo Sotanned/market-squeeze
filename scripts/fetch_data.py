@@ -285,7 +285,10 @@ def cross_checked(
             values[name] = result
             url = url or result[2]
             as_of = as_of or result[1]
-            unit = result[3] if len(result) > 3 and result[3] else unit
+            # An explicit unit hint carries the denominator (USd/lb); the feed's
+            # currency field alone would flatten it to "USD".
+            if not unit_hint and len(result) > 3 and result[3]:
+                unit = result[3]
         except Exception as exc:  # noqa: BLE001
             notes.append(f"{label}[{name}] failed: {exc}")
 
@@ -587,6 +590,31 @@ def probe() -> int:
             print(f"  FAILED    {label}: {type(exc).__name__}: {str(exc)[:160]}")
     print(f"\n{working}/{len(checks)} probes reachable.")
     print("Declared gaps (no free source, not probed): " + ", ".join(sorted(NO_FREE_SOURCE)))
+
+    print("\nDiagnostics for failing sources:")
+    for label, url in (
+        ("stooq current form", "https://stooq.com/q/l/?s=hg.f&f=sd2t2ohlcv&h&e=csv"),
+        ("stooq minimal", "https://stooq.com/q/l/?s=hg.f&e=csv"),
+        ("stooq daily history", "https://stooq.com/q/d/l/?s=hg.f&i=d"),
+        ("stooq control (aapl.us)", "https://stooq.com/q/l/?s=aapl.us&f=sd2t2ohlcv&h&e=csv"),
+        ("stooq .pl mirror", "https://stooq.pl/q/l/?s=hg.f&f=sd2t2ohlcv&h&e=csv"),
+        (
+            "esmis findByIdentifier/cattle",
+            "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/cattle",
+        ),
+        (
+            "esmis cattle-inventory",
+            "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/cattle-inventory?latest=true",
+        ),
+        ("esmis search", "https://usda.library.cornell.edu/api/v1/search?q=cattle"),
+        ("esmis releases", "https://usda.library.cornell.edu/api/v1/releases?q=cattle"),
+    ):
+        try:
+            resp = SESSION.get(url, timeout=TIMEOUT)
+            body = " ".join(resp.text.split())[:200]
+            print(f"  [{resp.status_code}] {label}: {body}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"  [ERR] {label}: {type(exc).__name__}: {str(exc)[:120]}")
     return 0
 
 
