@@ -167,9 +167,14 @@ def fred_last(series_id: str) -> tuple[float, str, str]:
     return parse_number(value), day, url
 
 
-def westmetall_copper() -> dict[str, tuple[float, str]]:
-    """Scrape LME copper cash, 3-month and warehouse stocks from Westmetall's table."""
+def westmetall_copper_rows(limit: int = 30) -> list[dict]:
+    """LME copper cash, 3-month and stocks, newest first.
+
+    The page carries a multi-session table; reading only the top row discards
+    the trend, which is the part that leads.
+    """
     html = http_get(WESTMETALL_CU).text
+    rows: list[dict] = []
     for row in re.findall(r"<tr[^>]*>(.*?)</tr>", html, re.S | re.I):
         cells = [
             re.sub(r"<[^>]+>", " ", c).replace("&nbsp;", " ").strip()
@@ -194,12 +199,20 @@ def westmetall_copper() -> dict[str, tuple[float, str]]:
             )
         except ValueError:
             continue
-        return {
-            "cash": (cash, as_of),
-            "three_month": (three_month, as_of),
-            "stocks": (stocks, as_of),
-        }
-    raise RuntimeError("no parseable data row found in table (page layout may have changed)")
+        rows.append(
+            {
+                "date": as_of,
+                "cash": cash,
+                "three_month": three_month,
+                "spread": round(cash - three_month, 2),
+                "stocks": stocks,
+            }
+        )
+        if len(rows) >= limit:
+            break
+    if not rows:
+        raise RuntimeError("no parseable data row found in table (page layout may have changed)")
+    return rows
 
 
 def nass_cattle_report(today: datetime | None = None) -> tuple[str, str, str]:
@@ -333,47 +346,59 @@ def cocoa_contract_symbols(today: datetime) -> tuple[str, str]:
 # --- assembly --------------------------------------------------------------
 
 
-def collect() -> dict[str, dict]:
+def collect() -> tuple[dict[str, dict], dict[str, list]]:
     fields: dict[str, dict] = {}
+    series: dict[str, list] = {}
     today = datetime.now(timezone.utc)
 
     # Copper
     try:
-        lme = westmetall_copper()
-        for key, name in (
-            ("cash", "lme_copper_cash"),
-            ("three_month", "lme_copper_3m"),
+        rows = westmetall_copper_rows()
+        latest = rows[0]
+        series["lme_copper"] = rows
+        for key, name, unit, note in (
+            ("cash", "lme_copper_cash", "USD/tonne", "Westmetall republication of LME settlements"),
+            ("three_month", "lme_copper_3m", "USD/tonne", "Westmetall republication of LME settlements"),
+            ("stocks", "lme_copper_stocks", "tonnes", "Westmetall republication of LME stocks"),
+            (
+                "spread",
+                "lme_copper_cash_3m_spread",
+                "USD/tonne",
+                "positive = cash above 3-month (backwardation, premium for immediate delivery)",
+            ),
         ):
-            value, as_of = lme[key]
             fields[name] = make_field(
-                value=value,
-                unit="USD/tonne",
-                as_of=as_of,
+                value=latest[key],
+                unit=unit,
+                as_of=latest["date"],
                 source_url=WESTMETALL_CU,
                 source_tier="secondary",
                 status="ok",
-                note="Westmetall republication of LME settlement data; LME itself has no free feed",
+                note=note,
             )
-        stocks_value, stocks_as_of = lme["stocks"]
-        fields["lme_copper_stocks"] = make_field(
-            value=stocks_value,
-            unit="tonnes",
-            as_of=stocks_as_of,
-            source_url=WESTMETALL_CU,
-            source_tier="secondary",
-            status="ok",
-            note="Westmetall republication of LME warehouse stocks",
-        )
-        cash_value = lme["cash"][0]
-        fields["lme_copper_cash_3m_spread"] = make_field(
-            value=round(cash_value - lme["three_month"][0], 2),
-            unit="USD/tonne",
-            as_of=lme["cash"][1],
-            source_url=WESTMETALL_CU,
-            source_tier="secondary",
-            status="ok",
-            note="positive = cash above 3-month (backwardation, premium for immediate delivery)",
-        )
+        if len(rows) >= 2:
+            oldest = rows[-1]
+            fields["lme_copper_spread_change"] = make_field(
+                value=round(latest["spread"] - oldest["spread"], 2),
+                unit="USD/tonne",
+                as_of=latest["date"],
+                source_url=WESTMETALL_CU,
+                source_tier="secondary",
+                status="ok",
+                note=f"cash-3M spread moved {oldest['spread']} ({oldest['date']}) -> "
+                f"{latest['spread']} ({latest['date']}) across {len(rows)} sessions; "
+                "negative = premium for immediate metal draining",
+            )
+            fields["lme_copper_stocks_change"] = make_field(
+                value=round(latest["stocks"] - oldest["stocks"], 1),
+                unit="tonnes",
+                as_of=latest["date"],
+                source_url=WESTMETALL_CU,
+                source_tier="secondary",
+                status="ok",
+                note=f"stocks moved {oldest['stocks']:,.0f} ({oldest['date']}) -> "
+                f"{latest['stocks']:,.0f} ({latest['date']}) across {len(rows)} sessions",
+            )
     except Exception as exc:  # noqa: BLE001
         detail = f"Westmetall scrape failed: {exc}"
         for name, unit in (
@@ -381,6 +406,8 @@ def collect() -> dict[str, dict]:
             ("lme_copper_3m", "USD/tonne"),
             ("lme_copper_stocks", "tonnes"),
             ("lme_copper_cash_3m_spread", "USD/tonne"),
+            ("lme_copper_spread_change", "USD/tonne"),
+            ("lme_copper_stocks_change", "tonnes"),
         ):
             fields[name] = unavailable(WESTMETALL_CU, detail, "secondary", unit)
 
@@ -518,10 +545,23 @@ def collect() -> dict[str, dict]:
             "and not a substitute for it"
         )
 
+    # Freight equities stand in for charter rates: the Baltic indices themselves
+    # are licensed, so these ETFs are the only free read on the rate layer.
+    for name, symbol, label in (
+        ("freight_tanker_etf", "BWET", "tanker"),
+        ("freight_drybulk_etf", "BDRY", "dry bulk"),
+    ):
+        fields[name] = cross_checked(name, "USD", (lambda sym=symbol: yahoo_last(sym)), None)
+        if fields[name]["status"] == "ok":
+            fields[name]["note"] = (
+                f"{label} freight ETF as a proxy for charter rates; NOT a Baltic index, "
+                "and an equity wrapper carries roll and fee drag"
+            )
+
     for name, (url, note) in NO_FREE_SOURCE.items():
         fields[name] = unavailable(url, note, "primary")
 
-    return fields
+    return fields, series
 
 
 def next_free_path(directory: Path, stem: str, suffix: str = ".json") -> Path:
@@ -546,7 +586,9 @@ def probe() -> int:
         ("Yahoo CC=F cocoa front", lambda: yahoo_last("CC=F")),
         ("Yahoo BZ=F Brent front", lambda: yahoo_last("BZ=F")),
         (f"Yahoo {next_cocoa} cocoa next", lambda: yahoo_last(next_cocoa)),
-        ("Westmetall LME copper table", westmetall_copper),
+        ("Westmetall LME copper table", lambda: westmetall_copper_rows()[:3]),
+        ("Yahoo BWET tanker ETF", lambda: yahoo_last("BWET")),
+        ("Yahoo BDRY dry bulk ETF", lambda: yahoo_last("BDRY")),
         ("NASS Cattle report", lambda: nass_cattle_report()[::2]),
         ("NASS cattle numbers", lambda: parse_cattle_numbers(nass_cattle_report()[1])),
     ]
@@ -580,7 +622,7 @@ def main() -> int:
         return probe()
 
     run_date = args.date or datetime.now(timezone.utc).date().isoformat()
-    fields = collect()
+    fields, series = collect()
 
     counts: dict[str, int] = {}
     for spec in fields.values():
@@ -593,6 +635,7 @@ def main() -> int:
         "field_count": len(fields),
         "status_counts": counts,
         "fields": fields,
+        "series": series,
     }
 
     out_dir = Path(args.out_dir)

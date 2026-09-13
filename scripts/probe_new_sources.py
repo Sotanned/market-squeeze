@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Throwaway: probe candidate leading-indicator sources from a runner.
-
-Delete once the working ones graduate into fetch_data.py.
+"""Throwaway round 2: discover the PortWatch chokepoint service and the
+NASS Cattle on Feed filename. Delete once both are resolved.
 """
 from __future__ import annotations
 
@@ -12,84 +11,65 @@ import requests
 
 SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "market-squeeze-probe/1.0", "Accept": "*/*"})
+ARCGIS_ROOT = "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/arcgis/rest/services?f=json"
 
 
-def show(label: str, url: str, extract=None) -> None:
+def get(url, timeout=25):
+    return SESSION.get(url, timeout=timeout)
+
+
+print("=== PortWatch: find the chokepoint service ===")
+try:
+    catalogue = get(ARCGIS_ROOT).json().get("services", [])
+    print(f"  {len(catalogue)} services in catalogue")
+    hits = [
+        svc
+        for svc in catalogue
+        if re.search(r"choke|transit|daily|strait|port", str(svc.get("name", "")), re.I)
+    ]
+    for svc in hits[:12]:
+        print(f"   candidate: {svc.get('name')} ({svc.get('type')})")
+    for svc in hits[:4]:
+        url = f"{svc['url']}/0/query?where=1%3D1&outFields=*&resultRecordCount=1&f=json"
+        try:
+            resp = get(url)
+            body = " ".join(resp.text.split())
+            print(f"   [{resp.status_code}] query {svc['name']}: {body[:300]}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"   [ERR] query {svc['name']}: {exc}")
+except Exception as exc:  # noqa: BLE001
+    print(f"  catalogue failed: {exc}")
+
+print("\n=== NASS Cattle on Feed: find the filename ===")
+# catl<MMYY>.txt works, so the host is fine and only the stem is wrong.
+for stem in ("cofd", "ctonfd", "cattle_on_feed", "cofdall", "cofl", "cofdx"):
+    for name in (f"{stem}0826.txt", f"{stem}0926.txt"):
+        for host in (
+            "https://release.nass.usda.gov/reports/",
+            "https://www.nass.usda.gov/Publications/Todays_Reports/reports/",
+        ):
+            try:
+                resp = get(host + name, timeout=15)
+                if resp.ok and "Cattle" in resp.text[:400]:
+                    print(f"   [200] HIT {host+name}: {' '.join(resp.text.split())[:160]}")
+                else:
+                    print(f"   [{resp.status_code}] {host.split('/')[2]}/{name}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"   [ERR] {name}: {type(exc).__name__}")
+
+print("\n=== NASS: list what the reports directory actually exposes ===")
+for url in (
+    "https://release.nass.usda.gov/reports/",
+    "https://www.nass.usda.gov/Publications/Todays_Reports/",
+):
     try:
-        resp = SESSION.get(url, timeout=25)
-        body = " ".join(resp.text.split())
-        detail = extract(resp) if (extract and resp.ok) else body[:180]
-        print(f"  [{resp.status_code}] {label}: {detail}")
+        resp = get(url)
+        names = sorted(set(re.findall(r"([a-z_]{3,20}\d{4}\.txt)", resp.text, re.I)))
+        print(f"  [{resp.status_code}] {url} -> {len(names)} report files; sample: {names[:25]}")
+        feed = [n for n in names if re.search(r"cof|feed", n, re.I)]
+        if feed:
+            print(f"   *** cattle-on-feed candidates: {feed}")
     except Exception as exc:  # noqa: BLE001
-        print(f"  [ERR] {label}: {type(exc).__name__}: {str(exc)[:120]}")
-
-
-def iv_summary(resp):
-    try:
-        data = resp.json()["optionChain"]["result"][0]
-        calls = data["options"][0].get("calls", [])
-        ivs = [c.get("impliedVolatility") for c in calls if c.get("impliedVolatility")]
-        return f"expiries={len(data.get('expirationDates', []))} calls={len(calls)} iv_sample={ivs[:3]}"
-    except Exception as exc:  # noqa: BLE001
-        return f"unparseable: {exc}"
-
-
-def chart_summary(resp):
-    try:
-        meta = resp.json()["chart"]["result"][0]["meta"]
-        return f"{meta.get('symbol')} price={meta.get('regularMarketPrice')} cur={meta.get('currency')}"
-    except Exception as exc:  # noqa: BLE001
-        return f"unparseable: {exc}"
-
-
-def westmetall_header(resp):
-    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", resp.text, re.S | re.I)[:4]
-    out = []
-    for row in rows:
-        cells = [
-            " ".join(re.sub(r"<[^>]+>", " ", c).split())
-            for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", row, re.S | re.I)
-        ]
-        if cells:
-            out.append(" | ".join(cells)[:150])
-    return " // ".join(out)
-
-
-print("=== LAYER 3: NASS Cattle on Feed (monthly placements) ===")
-for name in ("cofd0926", "cofd0826", "cofd0726"):
-    show(name, f"https://release.nass.usda.gov/reports/{name}.txt")
-
-print("\n=== LAYER 3: LME cancelled warrants (Westmetall column check) ===")
-show(
-    "westmetall Cu table columns",
-    "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
-    westmetall_header,
-)
-for field in ("LME_Cu_cancelled_warrants", "LME_Cu_stock", "LME_Cu_3m"):
-    show(f"westmetall field={field}", f"https://www.westmetall.com/en/markdaten.php?action=table&field={field}")
-
-print("\n=== LAYER 3: IMF PortWatch chokepoint transits ===")
-show("portwatch site", "https://portwatch.imf.org/")
-show("portwatch datasets", "https://portwatch.imf.org/datasets")
-show(
-    "portwatch arcgis root",
-    "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/arcgis/rest/services?f=json",
-)
-
-print("\n=== LAYER 6: freight equities ===")
-for sym in ("BWET", "BDRY", "^BDI"):
-    show(
-        sym,
-        f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=5d",
-        chart_summary,
-    )
-
-print("\n=== LAYER 2: options implied vol / skew ===")
-for sym in ("HG=F", "CC=F", "LE=F"):
-    show(
-        f"options {sym}",
-        f"https://query1.finance.yahoo.com/v7/finance/options/{sym}",
-        iv_summary,
-    )
+        print(f"  [ERR] {url}: {exc}")
 
 sys.exit(0)
