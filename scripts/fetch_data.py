@@ -15,6 +15,7 @@ import io
 import json
 import re
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -103,6 +104,11 @@ def http_get(url: str) -> requests.Response:
             return resp
         except Exception as exc:  # noqa: BLE001 - a failed fetch must never abort the run
             last = exc
+            # NASS answers bursts with 403. Without a pause that false negative
+            # makes the report walk fall through to an older release and
+            # present it as the latest.
+            if attempt < RETRIES:
+                time.sleep(1.5 * (attempt + 1))
     raise RuntimeError(f"{type(last).__name__}: {last}")
 
 
@@ -235,6 +241,51 @@ def nass_cattle_report(today: datetime | None = None) -> tuple[str, str, str]:
                 released = datetime.strptime(match.group(1), "%B %d, %Y").date().isoformat()
                 return released, text, url
     raise RuntimeError("no NASS Cattle report found for the last two release cycles")
+
+
+def nass_cattle_on_feed(today: datetime | None = None) -> tuple[str, str, str]:
+    """Most recent monthly NASS Cattle on Feed report: (release date, body, url)."""
+    today = today or datetime.now(timezone.utc)
+    for back in range(5):
+        month, year = today.month - back, today.year
+        while month <= 0:
+            month += 12
+            year -= 1
+        name = f"cofd{month:02d}{str(year)[-2:]}.txt"
+        for host in NASS_REPORT_HOSTS:
+            url = host.format(name=name)
+            try:
+                text = http_get(url).text
+            except Exception:  # noqa: BLE001 - try the next host or an older month
+                continue
+            match = re.search(r"Released\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})", text)
+            if not match:
+                continue
+            released = datetime.strptime(match.group(1), "%B %d, %Y").date().isoformat()
+            return released, text, url
+    raise RuntimeError("no Cattle on Feed report found in the last five months")
+
+
+def parse_cof_numbers(text: str) -> dict[str, tuple[float, str]]:
+    """On-feed level plus the placements and marketings flows."""
+    flat = " ".join(text.split())
+    patterns = {
+        "on_feed": r"[Cc]attle and calves on feed[^.]{0,220}?totaled\s+([\d.,]+)\s*(million|thousand)?",
+        "placements": r"Placements[^.]{0,220}?totaled\s+([\d.,]+)\s*(million|thousand)?",
+        "marketings": r"Marketings[^.]{0,220}?totaled\s+([\d.,]+)\s*(million|thousand)?",
+    }
+    scales = {"million": "million head", "thousand": "thousand head"}
+    found: dict[str, tuple[float, str]] = {}
+    for key, pattern in patterns.items():
+        match = re.search(pattern, flat)
+        if match:
+            found[key] = (
+                parse_number(match.group(1)),
+                scales.get((match.group(2) or "").lower(), "head (unit as printed, verify)"),
+            )
+    if not found:
+        raise RuntimeError("on-feed/placements/marketings lines not found")
+    return found
 
 
 def parse_cattle_numbers(text: str) -> dict[str, tuple[float, str]]:
@@ -482,6 +533,37 @@ def collect() -> tuple[dict[str, dict], dict[str, list]]:
     ):
         fields.setdefault(name, unavailable(NASS_REPORT_HOSTS[0], "not attempted", "primary"))
 
+    try:
+        cof_date, cof_body, cof_url = nass_cattle_on_feed(today)
+        fields["usda_cattle_on_feed_report_release_date"] = make_field(
+            value=None, unit="date", as_of=cof_date, source_url=cof_url,
+            source_tier="primary", status="ok",
+            note=f"monthly Cattle on Feed released {cof_date}; placements is the leading "
+            "flow behind the semi-annual inventory level",
+        )
+        try:
+            cof_numbers = parse_cof_numbers(cof_body)
+            for key, name in (
+                ("on_feed", "usda_cattle_on_feed_total"),
+                ("placements", "usda_cattle_placements"),
+                ("marketings", "usda_cattle_marketings"),
+            ):
+                if key in cof_numbers:
+                    value, unit = cof_numbers[key]
+                    fields[name] = make_field(
+                        value=value, unit=unit, as_of=cof_date, source_url=cof_url,
+                        source_tier="primary", status="ok",
+                        note="regex extraction from the NASS Cattle on Feed text release",
+                    )
+        except Exception as exc:  # noqa: BLE001
+            for name in ("usda_cattle_on_feed_total", "usda_cattle_placements",
+                         "usda_cattle_marketings"):
+                fields.setdefault(name, unavailable(cof_url, f"parse failed: {exc}", "primary"))
+    except Exception as exc:  # noqa: BLE001
+        for name in ("usda_cattle_on_feed_report_release_date", "usda_cattle_on_feed_total",
+                     "usda_cattle_placements", "usda_cattle_marketings"):
+            fields[name] = unavailable(NASS_REPORT_HOSTS[0], f"Cattle on Feed lookup failed: {exc}", "primary")
+
     # Cocoa
     fields["ice_cocoa_front_price"] = cross_checked(
         "ice_cocoa_front_price",
@@ -590,6 +672,8 @@ def probe() -> int:
         ("Yahoo BWET tanker ETF", lambda: yahoo_last("BWET")),
         ("Yahoo BDRY dry bulk ETF", lambda: yahoo_last("BDRY")),
         ("NASS Cattle report", lambda: nass_cattle_report()[::2]),
+        ("NASS Cattle on Feed", lambda: nass_cattle_on_feed()[::2]),
+        ("NASS COF numbers", lambda: parse_cof_numbers(nass_cattle_on_feed()[1])),
         ("NASS cattle numbers", lambda: parse_cattle_numbers(nass_cattle_report()[1])),
     ]
     print(f"Source probe {now_iso()}\n")
