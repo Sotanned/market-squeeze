@@ -31,7 +31,11 @@ SESSION.headers.update({"User-Agent": USER_AGENT, "Accept": "*/*"})
 YAHOO_CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=10d"
 FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}"
 WESTMETALL_CU = "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash"
-ESMIS_CATTLE = "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/cattle?latest=true"
+# NASS publishes the semi-annual Cattle report as catlMMYY.txt on two hosts.
+NASS_REPORT_HOSTS = (
+    "https://release.nass.usda.gov/reports/{name}",
+    "https://www.nass.usda.gov/Publications/Todays_Reports/reports/{name}",
+)
 
 # Data that exists only behind licensing or an interactive viewer. Recorded as
 # unavailable with the human-readable location, never as a fabricated endpoint.
@@ -198,55 +202,53 @@ def westmetall_copper() -> dict[str, tuple[float, str]]:
     raise RuntimeError("no parseable data row found in table (page layout may have changed)")
 
 
-def deep_find(obj, pattern: str):
-    """Yield values whose key matches pattern, at any depth."""
-    rx = re.compile(pattern, re.I)
-    stack = [obj]
-    while stack:
-        node = stack.pop()
-        if isinstance(node, dict):
-            for key, val in node.items():
-                if rx.search(str(key)) and isinstance(val, (str, int, float)):
-                    yield val
-                stack.append(val)
-        elif isinstance(node, list):
-            stack.extend(node)
+def nass_cattle_report(today: datetime | None = None) -> tuple[str, str, str]:
+    """Most recent semi-annual NASS Cattle report: (release date, body text, url)."""
+    today = today or datetime.now(timezone.utc)
+    for year in (today.year, today.year - 1):
+        for month in (7, 1):
+            if (year, month) > (today.year, today.month):
+                continue
+            name = f"catl{month:02d}{str(year)[-2:]}.txt"
+            for host in NASS_REPORT_HOSTS:
+                url = host.format(name=name)
+                try:
+                    text = http_get(url).text
+                except Exception:  # noqa: BLE001 - try the next host or older cycle
+                    continue
+                match = re.search(r"Released\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})", text)
+                if not match:
+                    continue
+                released = datetime.strptime(match.group(1), "%B %d, %Y").date().isoformat()
+                return released, text, url
+    raise RuntimeError("no NASS Cattle report found for the last two release cycles")
 
 
-def esmis_cattle_release() -> tuple[str, str | None, str]:
-    """Latest USDA NASS Cattle report release date plus a text-release URL if present."""
-    payload = http_get(ESMIS_CATTLE).json()
-    stamps = [str(v) for v in deep_find(payload, r"release_date|released|^date$|publish")]
-    dates = []
-    for stamp in stamps:
-        match = re.search(r"(\d{4}-\d{2}-\d{2})", stamp)
-        if match:
-            dates.append(match.group(1))
-    if not dates:
-        raise RuntimeError(f"no release date in response (keys sampled: {str(payload)[:200]})")
-    text_url = next(
-        (
-            str(v)
-            for v in deep_find(payload, r"url|link|path")
-            if str(v).lower().endswith(".txt")
+def parse_cattle_numbers(text: str) -> dict[str, tuple[float, str]]:
+    """Pull headline inventory figures out of the NASS Cattle text release."""
+    patterns = {
+        "total": (
+            r"All cattle and calves[^.]{0,160}?totaled\s+([\d.,]+)\s*(million|thousand)?",
+            r"All cattle and calves[^\n\d]{0,40}([\d,]{3,})()",
         ),
-        None,
-    )
-    return max(dates), text_url, ESMIS_CATTLE
-
-
-def nass_cattle_numbers(text_url: str) -> dict[str, tuple[float, str]]:
-    """Pull headline inventory lines out of the NASS Cattle text release."""
-    body = http_get(text_url).text
-    wanted = {
-        "total": r"All cattle and calves[^\n\d]*([\d,]{4,})",
-        "heifers": r"Beef replacement heifers?[^\n\d]*([\d,]{3,})",
+        "heifers": (
+            r"Beef (?:cow )?replacement heifers[^.]{0,160}?(?:totaled|at|were)\s+"
+            r"([\d.,]+)\s*(million|thousand)?",
+            r"Beef (?:cow )?replacement heifers[^\n\d]{0,40}([\d,]{3,})()",
+        ),
     }
-    found = {}
-    for key, pattern in wanted.items():
-        match = re.search(pattern, body, re.I)
-        if match:
-            found[key] = (parse_number(match.group(1)), text_url)
+    scales = {"million": "million head", "thousand": "thousand head"}
+    found: dict[str, tuple[float, str]] = {}
+    for key, candidates in patterns.items():
+        for pattern in candidates:
+            match = re.search(pattern, text, re.I)
+            if match:
+                scale = (match.group(2) or "").lower()
+                found[key] = (
+                    parse_number(match.group(1)),
+                    scales.get(scale, "head (unit as printed in release, verify)"),
+                )
+                break
     if not found:
         raise RuntimeError("headline inventory lines not found in text release")
     return found
@@ -409,65 +411,54 @@ def collect() -> dict[str, dict]:
             ).lstrip("; ")
 
     try:
-        release_date, text_url, source = esmis_cattle_release()
+        release_date, body, report_url = nass_cattle_report(today)
         fields["usda_cattle_report_release_date"] = make_field(
             value=None,
             unit="date",
             as_of=release_date,
-            source_url=source,
+            source_url=report_url,
             source_tier="primary",
             status="ok",
             note=f"latest USDA NASS Cattle report released {release_date}; compare against the "
             "release date cited in the previous report to decide whether it is new",
         )
-        if text_url:
-            try:
-                numbers = nass_cattle_numbers(text_url)
-                if "total" in numbers:
-                    fields["usda_cattle_inventory_total"] = make_field(
-                        value=numbers["total"][0],
-                        unit="thousand head (as printed in release)",
+        try:
+            numbers = parse_cattle_numbers(body)
+            for key, name in (
+                ("total", "usda_cattle_inventory_total"),
+                ("heifers", "usda_beef_heifer_retention"),
+            ):
+                if key in numbers:
+                    value, unit = numbers[key]
+                    fields[name] = make_field(
+                        value=value,
+                        unit=unit,
                         as_of=release_date,
-                        source_url=text_url,
+                        source_url=report_url,
                         source_tier="primary",
                         status="ok",
-                        note="regex extraction from NASS text release; verify units against the release",
+                        note="regex extraction from the NASS text release",
                     )
-                if "heifers" in numbers:
-                    fields["usda_beef_heifer_retention"] = make_field(
-                        value=numbers["heifers"][0],
-                        unit="thousand head (as printed in release)",
-                        as_of=release_date,
-                        source_url=text_url,
-                        source_tier="primary",
-                        status="ok",
-                        note="regex extraction from NASS text release; verify units against the release",
-                    )
-            except Exception as exc:  # noqa: BLE001
-                for name in ("usda_cattle_inventory_total", "usda_beef_heifer_retention"):
-                    fields.setdefault(
-                        name, unavailable(text_url, f"text-release parse failed: {exc}", "primary")
-                    )
-        else:
+        except Exception as exc:  # noqa: BLE001
             for name in ("usda_cattle_inventory_total", "usda_beef_heifer_retention"):
-                fields[name] = unavailable(
-                    source, "no .txt release URL in ESMIS response", "primary"
+                fields.setdefault(
+                    name, unavailable(report_url, f"text-release parse failed: {exc}", "primary")
                 )
     except Exception as exc:  # noqa: BLE001
-        detail = f"ESMIS lookup failed: {exc}"
+        detail = f"NASS Cattle report lookup failed: {exc}"
         for name in (
             "usda_cattle_report_release_date",
             "usda_cattle_inventory_total",
             "usda_beef_heifer_retention",
         ):
-            fields[name] = unavailable(ESMIS_CATTLE, detail, "primary")
+            fields[name] = unavailable(NASS_REPORT_HOSTS[0], detail, "primary")
 
     for name in (
         "usda_cattle_inventory_total",
         "usda_beef_heifer_retention",
         "usda_cattle_report_release_date",
     ):
-        fields.setdefault(name, unavailable(ESMIS_CATTLE, "not attempted", "primary"))
+        fields.setdefault(name, unavailable(NASS_REPORT_HOSTS[0], "not attempted", "primary"))
 
     # Cocoa
     fields["ice_cocoa_front_price"] = cross_checked(
@@ -561,7 +552,8 @@ def probe() -> int:
         ("Yahoo BZ=F Brent front", lambda: yahoo_last("BZ=F")),
         (f"Yahoo {next_cocoa} cocoa next", lambda: yahoo_last(next_cocoa)),
         ("Westmetall LME copper table", westmetall_copper),
-        ("Cornell ESMIS cattle release", esmis_cattle_release),
+        ("NASS Cattle report", lambda: nass_cattle_report()[::2]),
+        ("NASS cattle numbers", lambda: parse_cattle_numbers(nass_cattle_report()[1])),
     ]
     print(f"Source probe {now_iso()}\n")
     working = 0
@@ -575,34 +567,6 @@ def probe() -> int:
     print(f"\n{working}/{len(checks)} probes reachable.")
     print("Declared gaps (no free source, not probed): " + ", ".join(sorted(NO_FREE_SOURCE)))
 
-    print("\nDiagnostics for USDA cattle inventory:")
-    for label, url in (
-        (
-            "esmis concern page (Cattle)",
-            "https://usda.library.cornell.edu/concern/publications/h702q636h",
-        ),
-        (
-            "esmis findByIdentifier/h702q636h",
-            "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/h702q636h?latest=true",
-        ),
-        ("nass release catl0726.txt", "https://release.nass.usda.gov/reports/catl0726.txt"),
-        ("nass release catl0126.txt", "https://release.nass.usda.gov/reports/catl0126.txt"),
-        (
-            "nass todays_reports catl0726",
-            "https://www.nass.usda.gov/Publications/Todays_Reports/reports/catl0726.txt",
-        ),
-        (
-            "quickstats without key",
-            "https://quickstats.nass.usda.gov/api/api_GET/?key=NOKEY&commodity_desc=CATTLE"
-            "&year=2026&statisticcat_desc=INVENTORY&format=JSON",
-        ),
-    ):
-        try:
-            resp = SESSION.get(url, timeout=TIMEOUT)
-            body = " ".join(resp.text.split())[:200]
-            print(f"  [{resp.status_code}] {label}: {body}")
-        except Exception as exc:  # noqa: BLE001
-            print(f"  [ERR] {label}: {type(exc).__name__}: {str(exc)[:120]}")
     return 0
 
 
