@@ -94,6 +94,14 @@ source change to re-confirm.
 | `usda_cattle_inventory_total` | regex over the NASS text release | primary | yes |
 | `usda_beef_heifer_retention` | regex over the NASS text release | primary | yes |
 | `lng_asia_monthly_index` | FRED `PNGASJPUSDM` (IMF) | primary | yes, but see below |
+| `lme_copper_spread_change` | Westmetall multi-session table | secondary | yes |
+| `lme_copper_stocks_change` | Westmetall multi-session table | secondary | yes |
+| `hormuz_daily_transits` | IMF PortWatch `Daily_Chokepoints_Data` | primary | yes |
+| `freight_tanker_etf` / `freight_drybulk_etf` | Yahoo `BWET` / `BDRY` | secondary | yes |
+| `usda_cattle_on_feed_report_release_date` | NASS `cofdMMYY.txt` header | primary | yes |
+| `usda_cattle_on_feed_total` | NASS Cattle on Feed release | primary | yes |
+| `usda_cattle_placements` | NASS Cattle on Feed release | primary | yes |
+| `usda_cattle_marketings` | NASS Cattle on Feed release | primary | yes |
 
 Caveats worth knowing when reading a report:
 
@@ -106,6 +114,12 @@ Caveats worth knowing when reading a report:
   series and its latest observation is already over a month old, so the routine
   will treat it as stale. With JKM proprietary, there is no usable Asian LNG
   coverage today.
+- **`series.lme_copper` carries ~30 sessions**, so trend is readable from a single
+  run rather than needing weeks of history. Levels lag; the spread leads.
+- **PortWatch lags about a week.** Check `as_of` before treating a transit count
+  as current.
+- Freight ETFs are proxies for charter rates, not the Baltic indices, and carry
+  roll and fee drag.
 - Cattle prices are Yahoo last-traded prices, **not** official CME settlements.
 - LME figures are Westmetall's republication; the LME itself has no free feed.
 - `brent_spot` is the official EIA series and lags by roughly a week;

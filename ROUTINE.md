@@ -57,10 +57,10 @@ Fields by area:
 
 | Area | Fields |
 |---|---|
-| Copper | `lme_copper_stocks`, `lme_copper_cash`, `lme_copper_3m`, `lme_copper_cash_3m_spread`, `comex_copper_stocks`, `comex_copper_front_price` |
-| Beef | `cme_live_cattle_front`, `cme_feeder_cattle_front`, `usda_cattle_report_release_date`, `usda_cattle_inventory_total`, `usda_beef_heifer_retention` |
+| Copper | `lme_copper_stocks`, `lme_copper_cash`, `lme_copper_3m`, `lme_copper_cash_3m_spread`, `lme_copper_spread_change`, `lme_copper_stocks_change`, `comex_copper_stocks`, `comex_copper_front_price` |
+| Beef | `cme_live_cattle_front`, `cme_feeder_cattle_front`, `usda_cattle_report_release_date`, `usda_cattle_inventory_total`, `usda_beef_heifer_retention`, `usda_cattle_on_feed_report_release_date`, `usda_cattle_on_feed_total`, `usda_cattle_placements`, `usda_cattle_marketings` |
 | Cocoa | `ice_cocoa_certified_stocks`, `ice_cocoa_front_price`, `ice_cocoa_next_price`, `ice_cocoa_front_next_spread`, `icco_balance` |
-| Gulf energy | `brent_spot`, `brent_front_month`, `jkm_lng_spot`, `lng_asia_monthly_index` |
+| Gulf energy | `brent_spot`, `brent_front_month`, `hormuz_daily_transits`, `freight_tanker_etf`, `freight_drybulk_etf`, `jkm_lng_spot`, `lng_asia_monthly_index` |
 | Data center spending | no data source; see below |
 
 Slow-moving series. Report these only when a new release has appeared since the
@@ -75,6 +75,15 @@ mark a status for that figure:
   known release date from last week's report and write "no new release since
   [date]" unless a new quarterly release has appeared, which you may confirm by
   web search of company investor-relations pages only.
+
+The data file also carries a top-level `series` block (currently
+`series.lme_copper`, ~30 sessions). **Read it.** A single print shows a level; the
+series shows whether the premium for immediate delivery is building or draining,
+which is the part that leads. Quote the direction of the spread over the window,
+not just today's value.
+
+`hormuz_daily_transits` replaces the old news-sourced Hormuz status, but it lags
+roughly a week — check `as_of`. Web search still covers shipping *events*.
 
 `lng_asia_monthly_index` is a **monthly IMF index, not JKM spot**. It is not a
 substitute for `jkm_lng_spot`. If you cite it, label it as the monthly index and
