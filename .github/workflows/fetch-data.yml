@@ -52,6 +52,14 @@ jobs:
         continue-on-error: true
         run: python scripts/fetch_data.py --probe
 
+      - name: Probe candidate sources
+        if: ${{ inputs.probe_only == true }}
+        continue-on-error: true
+        run: |
+          if [ -f scripts/probe_new_sources.py ]; then
+            python scripts/probe_new_sources.py
+          fi
+
       - name: Fetch data
         if: ${{ inputs.probe_only != true }}
         id: fetch
