@@ -115,15 +115,56 @@ section is empty.
 
 ## STEP 5 — WRITE THE REPORT
 
-- **Headline**: one sentence on what changed across all five areas.
-- **Numbers table**: area, figure, this week, **as of**, last week, direction,
-  source link, **source tier** (primary or secondary, from `source_tier`).
-- **Status**: each area marked, with one sentence of evidence naming the figure.
-- **What changed**: only areas that moved, one short paragraph each.
-- **Ending signals**: for anything tightening, note signs it is resolving —
-  stocks rebuilding, new supply, buyers switching, capex guidance cut.
-- **Data gaps**: everything unverified this week, stated plainly as unassessed,
-  carrying each field's `note` reason.
+Write tight. A reader should get the whole picture from the verdict block alone.
+Cut hedging: no "appears to", "may suggest", "it is worth noting", "arguably",
+"broadly". State the number, then the call. If a sentence survives without its
+qualifier, drop the qualifier.
+
+Sections, in this order:
+
+### 1. Headline
+
+One sentence on what changed across all five areas. If most areas are unclear or
+missing data, lead with that rather than with the one area that moved.
+
+### 2. Verdict
+
+One line per area, number first, in this shape:
+
+> **Copper — Easing.** Cash−3M +5.5 vs +535 peak (Aug 17); stocks −6.2% over 30 sessions.
+
+One line each, about 20 words maximum. The call is Tightening, Easing, Steady or
+Unclear — or, for a slow-moving series with no new release, "no new release since
+[date]" with no call. **This replaces the old status section; do not write both.**
+
+### 3. Numbers table
+
+Columns: area, figure, this week, **as of**, last week, direction, **trend**,
+source link, **source tier**. The trend column carries the series direction where
+a series exists (for example `series.lme_copper`); otherwise "—".
+
+### 4. What changed
+
+Only areas that moved. Three sentences maximum each. An area that did not move
+gets no paragraph.
+
+### 5. Transmission map
+
+Per STEP 5C.
+
+### 6. Exposed companies
+
+Per STEP 5B.
+
+### 7. Ending signals
+
+For anything tightening, note signs it is resolving — stocks rebuilding, new
+supply, buyers switching, capex guidance cut.
+
+### 8. Data gaps
+
+Everything unverified this week, stated plainly as unassessed, carrying each
+field's `note` reason.
 
 ## STEP 5B — EXPOSED COMPANIES
 
@@ -142,6 +183,49 @@ not say anything is well positioned, cheap, or a beneficiary of a trend beyond
 the direct mechanical link. For each company add what would break the link — it
 hedges the exposure, the squeeze is already in guidance, or that input is a small
 share of revenue.
+
+## STEP 5C — TRANSMISSION MAP
+
+Only for areas marked **tightening or easing**. Skip steady, unclear, and
+anything you could not verify this week. If no area qualifies, write "No area
+qualifies this week." and move on.
+
+A squeeze transmits through six layers, fastest to slowest. The instrument
+differs by industry; the role does not.
+
+| Layer | Role | Copper | Cocoa | Beef | Energy |
+|---|---|---|---|---|---|
+| 1 Trigger | discrete event | mine strike, export ban | harvest failure, disease | drought, feed cost | attack, closure |
+| 2 Risk price | market pricing the peril | options skew | options skew | options skew, LRP | war-risk premium |
+| 3 Bottleneck | the physical constraint | cancelled warrants, stocks | port arrivals | **placements**, heifer retention | transits, ton-miles |
+| 4 Access premium | pay to get it now vs later | cash−3M, regional premium | front−next, origin diff | cash−futures basis | freight rate |
+| 5 Forward test | sustained or transient | LME curve | ICE curve | deferred futures | FFA curve |
+| 6 Equity | last to move | miners | grinders *(victims)* | packers | tankers, E&P |
+
+Two structural facts to apply, not restate:
+
+- **Layer 4 is always "what do you pay to get it now or here, versus later or
+  elsewhere."** In equipment-led squeezes that premium is denominated in **time**
+  — lead times, queue position — not money.
+- **Layer 3 always has a leading sub-component that a level metric hides.**
+  Flows lead, levels lag. Prefer the flow.
+
+Report at **sector level, not ticker level**. For each sector give:
+
+- the mechanism, one line — why this sector's margin moves
+- **what breaks the link** — it hedges, it passes the cost through, the input is
+  a small share of its cost base, or the squeeze is already in guidance
+
+Mark any link whose sign you cannot establish as **ambiguous** and say so, rather
+than assigning it a direction.
+
+Two rules that keep this honest:
+
+- **Most squeezes have no listed beneficiary.** Where the gain accrues to
+  private, foreign or smallholder producers, say that plainly instead of reaching
+  for a listed name. Note when the entire listed universe sits on the victim side.
+- **The map says where margin moves. It says nothing about what is already
+  priced.** Never present it as an opportunity and never imply timing.
 
 ## STEP 6 — COMMIT
 
