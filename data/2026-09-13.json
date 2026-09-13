@@ -1,0 +1,212 @@
+{
+  "fetched_at": "2026-09-13T01:14:25+00:00",
+  "field_count": 20,
+  "fields": {
+    "brent_front_month": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "single source only, not cross-checked",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD/bbl",
+      "value": 104.61
+    },
+    "brent_spot": {
+      "as_of": "2026-09-09",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "EIA Brent spot via FRED series DCOILBRENTEU; official series lags by roughly a week",
+      "source_tier": "primary",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
+      "status": "ok",
+      "unit": "USD/bbl",
+      "value": 109.51
+    },
+    "cme_feeder_cattle_front": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "single source only, not cross-checked; last traded price from Yahoo, not the official CME settlement",
+      "source_tier": "secondary",
+      "source_url": "USX",
+      "status": "ok",
+      "unit": "USd/lb",
+      "value": 332.5
+    },
+    "cme_live_cattle_front": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "single source only, not cross-checked; last traded price from Yahoo, not the official CME settlement",
+      "source_tier": "secondary",
+      "source_url": "USX",
+      "status": "ok",
+      "unit": "USd/lb",
+      "value": 219.675
+    },
+    "comex_copper_front_price": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "single source only, not cross-checked",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USd/lb",
+      "value": 6.548
+    },
+    "comex_copper_stocks": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "No free machine-readable endpoint verified; CME depository stock reports are Akamai-protected. Check manually or add a licensed CME feed.",
+      "source_tier": "primary",
+      "source_url": "https://www.cmegroup.com/markets/metals/base/copper.html",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "icco_balance": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "ICCO Quarterly Bulletin of Cocoa Statistics is a paid publication; headline balance appears only in irregular press releases. Check manually.",
+      "source_tier": "primary",
+      "source_url": "https://www.icco.org/statistics/",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "ice_cocoa_certified_stocks": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "ICE certified stocks publish through an interactive/licensed report with no free unauthenticated endpoint. Check manually.",
+      "source_tier": "primary",
+      "source_url": "https://www.ice.com/report/41",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "ice_cocoa_front_next_spread": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "CCZ26.NYB minus CCH27.NYB; positive = front above next (backwardation)",
+      "source_tier": "secondary",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/CCZ26.NYB?interval=1d&range=10d | USD",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": -123.0
+    },
+    "ice_cocoa_front_price": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "single source only, not cross-checked",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 5913.0
+    },
+    "ice_cocoa_next_price": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "dated contract symbol CCH27.NYB",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 6036.0
+    },
+    "jkm_lng_spot": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "JKM is a proprietary S&P Global Platts assessment with no free spot source. See lng_asia_monthly_index for a free monthly IMF proxy (a different series, not JKM).",
+      "source_tier": "primary",
+      "source_url": "https://www.spglobal.com/commodityinsights/en/our-methodology/price-assessments/lng/jkm-japan-korea-marker-gas-price-assessments",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "lme_copper_3m": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "Westmetall republication of LME settlement data; LME itself has no free feed",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 14233.0
+    },
+    "lme_copper_cash": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "Westmetall republication of LME settlement data; LME itself has no free feed",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 14238.5
+    },
+    "lme_copper_cash_3m_spread": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "positive = cash above 3-month (backwardation, premium for immediate delivery)",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 5.5
+    },
+    "lme_copper_stocks": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "Westmetall republication of LME warehouse stocks",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "tonnes",
+      "value": 234475.0
+    },
+    "lng_asia_monthly_index": {
+      "as_of": "2026-07-01",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "IMF global price of LNG (Asia) via FRED PNGASJPUSDM; MONTHLY index, not JKM spot, and not a substitute for it",
+      "source_tier": "primary",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=PNGASJPUSDM",
+      "status": "ok",
+      "unit": "USD/MMBtu",
+      "value": 19.562
+    },
+    "usda_beef_heifer_retention": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "not attempted",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/{name}",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "usda_cattle_inventory_total": {
+      "as_of": "2026-07-24",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "regex extraction from the NASS text release",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/catl0726.txt",
+      "status": "ok",
+      "unit": "million head",
+      "value": 94.2
+    },
+    "usda_cattle_report_release_date": {
+      "as_of": "2026-07-24",
+      "fetched_at": "2026-09-13T01:14:25+00:00",
+      "note": "latest USDA NASS Cattle report released 2026-07-24; compare against the release date cited in the previous report to decide whether it is new",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/catl0726.txt",
+      "status": "ok",
+      "unit": "date",
+      "value": null
+    }
+  },
+  "run_date": "2026-09-13",
+  "schema_version": 1,
+  "status_counts": {
+    "ok": 15,
+    "unavailable": 5
+  }
+}
