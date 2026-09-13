@@ -32,6 +32,12 @@ SESSION.headers.update({"User-Agent": USER_AGENT, "Accept": "*/*"})
 YAHOO_CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=10d"
 FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}"
 WESTMETALL_CU = "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash"
+# IMF PortWatch daily chokepoint transits: the only free quantified read on
+# Hormuz, replacing a news-scraped status.
+PORTWATCH_CHOKEPOINTS = (
+    "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/arcgis/rest/services/"
+    "Daily_Chokepoints_Data/FeatureServer/0/query"
+)
 # NASS publishes the semi-annual Cattle report as catlMMYY.txt on two hosts.
 NASS_REPORT_HOSTS = (
     "https://release.nass.usda.gov/reports/{name}",
@@ -219,6 +225,48 @@ def westmetall_copper_rows(limit: int = 30) -> list[dict]:
     if not rows:
         raise RuntimeError("no parseable data row found in table (page layout may have changed)")
     return rows
+
+
+def _arcgis_date(value) -> str | None:
+    if isinstance(value, str) and re.match(r"\d{4}-\d{2}-\d{2}", value):
+        return value[:10]
+    if isinstance(value, (int, float)) and value > 1e9:
+        return datetime.fromtimestamp(value / 1000, timezone.utc).date().isoformat()
+    return None
+
+
+def portwatch_chokepoint(name: str = "hormuz") -> tuple[float, str | None, str]:
+    """Latest daily transit count for a chokepoint.
+
+    Field names are discovered from the response rather than assumed, so a
+    schema change degrades to unavailable instead of a wrong number.
+    """
+    url = (
+        f"{PORTWATCH_CHOKEPOINTS}?where=1%3D1&outFields=*&resultRecordCount=400"
+        "&orderByFields=date%20DESC&f=json"
+    )
+    payload = http_get(url).json()
+    features = payload.get("features") or []
+    if not features:
+        raise RuntimeError(f"no features returned (keys: {list(payload)[:6]})")
+    for feature in features:
+        attrs = feature.get("attributes") or {}
+        if not any(isinstance(v, str) and name in v.lower() for v in attrs.values()):
+            continue
+        as_of = next(
+            (_arcgis_date(v) for k, v in attrs.items() if re.search(r"date", str(k), re.I)
+             and _arcgis_date(v)),
+            None,
+        )
+        for key, val in attrs.items():
+            if isinstance(val, (int, float)) and re.search(
+                r"n_transit|transit_calls|^n_total|vessel", str(key), re.I
+            ):
+                return float(val), as_of, url
+        raise RuntimeError(
+            f"found {name} row but no transit field; keys were {sorted(attrs)[:15]}"
+        )
+    raise RuntimeError(f"no {name} row in the 400 most recent records")
 
 
 def nass_cattle_report(today: datetime | None = None) -> tuple[str, str, str]:
@@ -627,6 +675,19 @@ def collect() -> tuple[dict[str, dict], dict[str, list]]:
             "and not a substitute for it"
         )
 
+    try:
+        transits, transit_date, transit_url = portwatch_chokepoint("hormuz")
+        fields["hormuz_daily_transits"] = make_field(
+            value=transits, unit="vessels/day", as_of=transit_date,
+            source_url=transit_url, source_tier="primary", status="ok",
+            note="IMF PortWatch daily transit count; quantified replacement for the "
+            "news-sourced Hormuz status",
+        )
+    except Exception as exc:  # noqa: BLE001
+        fields["hormuz_daily_transits"] = unavailable(
+            PORTWATCH_CHOKEPOINTS, f"PortWatch lookup failed: {exc}", "primary", "vessels/day"
+        )
+
     # Freight equities stand in for charter rates: the Baltic indices themselves
     # are licensed, so these ETFs are the only free read on the rate layer.
     for name, symbol, label in (
@@ -674,6 +735,7 @@ def probe() -> int:
         ("NASS Cattle report", lambda: nass_cattle_report()[::2]),
         ("NASS Cattle on Feed", lambda: nass_cattle_on_feed()[::2]),
         ("NASS COF numbers", lambda: parse_cof_numbers(nass_cattle_on_feed()[1])),
+        ("PortWatch Hormuz transits", lambda: portwatch_chokepoint("hormuz")),
         ("NASS cattle numbers", lambda: parse_cattle_numbers(nass_cattle_report()[1])),
     ]
     print(f"Source probe {now_iso()}\n")
