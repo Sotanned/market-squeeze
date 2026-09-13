@@ -1,0 +1,516 @@
+{
+  "fetched_at": "2026-09-13T09:54:19+00:00",
+  "field_count": 29,
+  "fields": {
+    "brent_front_month": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "single source only, not cross-checked",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD/bbl",
+      "value": 104.61
+    },
+    "brent_spot": {
+      "as_of": "2026-09-09",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "EIA Brent spot via FRED series DCOILBRENTEU; official series lags by roughly a week",
+      "source_tier": "primary",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
+      "status": "ok",
+      "unit": "USD/bbl",
+      "value": 109.51
+    },
+    "cme_feeder_cattle_front": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "single source only, not cross-checked; last traded price from Yahoo, not the official CME settlement",
+      "source_tier": "secondary",
+      "source_url": "USX",
+      "status": "ok",
+      "unit": "USd/lb",
+      "value": 332.5
+    },
+    "cme_live_cattle_front": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "single source only, not cross-checked; last traded price from Yahoo, not the official CME settlement",
+      "source_tier": "secondary",
+      "source_url": "USX",
+      "status": "ok",
+      "unit": "USd/lb",
+      "value": 219.675
+    },
+    "comex_copper_front_price": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "single source only, not cross-checked",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USd/lb",
+      "value": 6.548
+    },
+    "comex_copper_stocks": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "No free machine-readable endpoint verified; CME depository stock reports are Akamai-protected. Check manually or add a licensed CME feed.",
+      "source_tier": "primary",
+      "source_url": "https://www.cmegroup.com/markets/metals/base/copper.html",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "freight_drybulk_etf": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "dry bulk freight ETF as a proxy for charter rates; NOT a Baltic index, and an equity wrapper carries roll and fee drag",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD",
+      "value": 16.01
+    },
+    "freight_tanker_etf": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "tanker freight ETF as a proxy for charter rates; NOT a Baltic index, and an equity wrapper carries roll and fee drag",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD",
+      "value": 726.92
+    },
+    "hormuz_daily_transits": {
+      "as_of": "2026-09-06",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "IMF PortWatch daily transit count; quantified replacement for the news-sourced Hormuz status",
+      "source_tier": "primary",
+      "source_url": "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/arcgis/rest/services/Daily_Chokepoints_Data/FeatureServer/0/query?where=1%3D1&outFields=*&resultRecordCount=400&orderByFields=date%20DESC&f=json",
+      "status": "ok",
+      "unit": "vessels/day",
+      "value": 6.0
+    },
+    "icco_balance": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "ICCO Quarterly Bulletin of Cocoa Statistics is a paid publication; headline balance appears only in irregular press releases. Check manually.",
+      "source_tier": "primary",
+      "source_url": "https://www.icco.org/statistics/",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "ice_cocoa_certified_stocks": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "ICE certified stocks publish through an interactive/licensed report with no free unauthenticated endpoint. Check manually.",
+      "source_tier": "primary",
+      "source_url": "https://www.ice.com/report/41",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "ice_cocoa_front_next_spread": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "CCZ26.NYB minus CCH27.NYB; positive = front above next (backwardation)",
+      "source_tier": "secondary",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/CCZ26.NYB?interval=1d&range=10d | USD",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": -123.0
+    },
+    "ice_cocoa_front_price": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "single source only, not cross-checked",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 5913.0
+    },
+    "ice_cocoa_next_price": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "dated contract symbol CCH27.NYB",
+      "source_tier": "secondary",
+      "source_url": "USD",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 6036.0
+    },
+    "jkm_lng_spot": {
+      "as_of": null,
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "JKM is a proprietary S&P Global Platts assessment with no free spot source. See lng_asia_monthly_index for a free monthly IMF proxy (a different series, not JKM).",
+      "source_tier": "primary",
+      "source_url": "https://www.spglobal.com/commodityinsights/en/our-methodology/price-assessments/lng/jkm-japan-korea-marker-gas-price-assessments",
+      "status": "unavailable",
+      "unit": "",
+      "value": null
+    },
+    "lme_copper_3m": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "Westmetall republication of LME settlements",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 14233.0
+    },
+    "lme_copper_cash": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "Westmetall republication of LME settlements",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 14238.5
+    },
+    "lme_copper_cash_3m_spread": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "positive = cash above 3-month (backwardation, premium for immediate delivery)",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": 5.5
+    },
+    "lme_copper_spread_change": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "cash-3M spread moved 34.0 (2026-07-31) -> 5.5 (2026-09-11) across 30 sessions; negative = premium for immediate metal draining",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "USD/tonne",
+      "value": -28.5
+    },
+    "lme_copper_stocks": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "Westmetall republication of LME stocks",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "tonnes",
+      "value": 234475.0
+    },
+    "lme_copper_stocks_change": {
+      "as_of": "2026-09-11",
+      "fetched_at": "2026-09-13T09:54:07+00:00",
+      "note": "stocks moved 249,850 (2026-07-31) -> 234,475 (2026-09-11) across 30 sessions",
+      "source_tier": "secondary",
+      "source_url": "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash",
+      "status": "ok",
+      "unit": "tonnes",
+      "value": -15375.0
+    },
+    "lng_asia_monthly_index": {
+      "as_of": "2026-07-01",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "IMF global price of LNG (Asia) via FRED PNGASJPUSDM; MONTHLY index, not JKM spot, and not a substitute for it",
+      "source_tier": "primary",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=PNGASJPUSDM",
+      "status": "ok",
+      "unit": "USD/MMBtu",
+      "value": 19.562
+    },
+    "usda_beef_heifer_retention": {
+      "as_of": "2026-07-24",
+      "fetched_at": "2026-09-13T09:54:08+00:00",
+      "note": "regex extraction from the NASS text release",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/catl0726.txt",
+      "status": "ok",
+      "unit": "million head",
+      "value": 3.8
+    },
+    "usda_cattle_inventory_total": {
+      "as_of": "2026-07-24",
+      "fetched_at": "2026-09-13T09:54:08+00:00",
+      "note": "regex extraction from the NASS text release",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/catl0726.txt",
+      "status": "ok",
+      "unit": "million head",
+      "value": 94.2
+    },
+    "usda_cattle_marketings": {
+      "as_of": "2026-08-21",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "regex extraction from the NASS Cattle on Feed text release",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/cofd0826.txt",
+      "status": "ok",
+      "unit": "million head",
+      "value": 1.62
+    },
+    "usda_cattle_on_feed_report_release_date": {
+      "as_of": "2026-08-21",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "monthly Cattle on Feed released 2026-08-21; placements is the leading flow behind the semi-annual inventory level",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/cofd0826.txt",
+      "status": "ok",
+      "unit": "date",
+      "value": null
+    },
+    "usda_cattle_on_feed_total": {
+      "as_of": "2026-08-21",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "regex extraction from the NASS Cattle on Feed text release",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/cofd0826.txt",
+      "status": "ok",
+      "unit": "million head",
+      "value": 11.1
+    },
+    "usda_cattle_placements": {
+      "as_of": "2026-08-21",
+      "fetched_at": "2026-09-13T09:54:19+00:00",
+      "note": "regex extraction from the NASS Cattle on Feed text release",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/cofd0826.txt",
+      "status": "ok",
+      "unit": "million head",
+      "value": 1.42
+    },
+    "usda_cattle_report_release_date": {
+      "as_of": "2026-07-24",
+      "fetched_at": "2026-09-13T09:54:08+00:00",
+      "note": "latest USDA NASS Cattle report released 2026-07-24; compare against the release date cited in the previous report to decide whether it is new",
+      "source_tier": "primary",
+      "source_url": "https://release.nass.usda.gov/reports/catl0726.txt",
+      "status": "ok",
+      "unit": "date",
+      "value": null
+    }
+  },
+  "run_date": "2026-09-13",
+  "schema_version": 1,
+  "series": {
+    "lme_copper": [
+      {
+        "cash": 14238.5,
+        "date": "2026-09-11",
+        "spread": 5.5,
+        "stocks": 234475.0,
+        "three_month": 14233.0
+      },
+      {
+        "cash": 14390.0,
+        "date": "2026-09-10",
+        "spread": 19.0,
+        "stocks": 234750.0,
+        "three_month": 14371.0
+      },
+      {
+        "cash": 14672.0,
+        "date": "2026-09-09",
+        "spread": 40.0,
+        "stocks": 235825.0,
+        "three_month": 14632.0
+      },
+      {
+        "cash": 14737.0,
+        "date": "2026-09-08",
+        "spread": 32.0,
+        "stocks": 237725.0,
+        "three_month": 14705.0
+      },
+      {
+        "cash": 14540.0,
+        "date": "2026-09-07",
+        "spread": 92.0,
+        "stocks": 236475.0,
+        "three_month": 14448.0
+      },
+      {
+        "cash": 14371.0,
+        "date": "2026-09-04",
+        "spread": 6.0,
+        "stocks": 234175.0,
+        "three_month": 14365.0
+      },
+      {
+        "cash": 14359.0,
+        "date": "2026-09-03",
+        "spread": 84.0,
+        "stocks": 234650.0,
+        "three_month": 14275.0
+      },
+      {
+        "cash": 14355.0,
+        "date": "2026-09-02",
+        "spread": 128.0,
+        "stocks": 233850.0,
+        "three_month": 14227.0
+      },
+      {
+        "cash": 14395.5,
+        "date": "2026-09-01",
+        "spread": 180.5,
+        "stocks": 233500.0,
+        "three_month": 14215.0
+      },
+      {
+        "cash": 14535.0,
+        "date": "2026-08-28",
+        "spread": 165.0,
+        "stocks": 234275.0,
+        "three_month": 14370.0
+      },
+      {
+        "cash": 14490.0,
+        "date": "2026-08-27",
+        "spread": 254.0,
+        "stocks": 235575.0,
+        "three_month": 14236.0
+      },
+      {
+        "cash": 14525.0,
+        "date": "2026-08-26",
+        "spread": 189.0,
+        "stocks": 237475.0,
+        "three_month": 14336.0
+      },
+      {
+        "cash": 14425.0,
+        "date": "2026-08-25",
+        "spread": 127.0,
+        "stocks": 238725.0,
+        "three_month": 14298.0
+      },
+      {
+        "cash": 14344.0,
+        "date": "2026-08-24",
+        "spread": 99.0,
+        "stocks": 240250.0,
+        "three_month": 14245.0
+      },
+      {
+        "cash": 14291.0,
+        "date": "2026-08-21",
+        "spread": 56.0,
+        "stocks": 238575.0,
+        "three_month": 14235.0
+      },
+      {
+        "cash": 14170.0,
+        "date": "2026-08-20",
+        "spread": 199.5,
+        "stocks": 239925.0,
+        "three_month": 13970.5
+      },
+      {
+        "cash": 14180.0,
+        "date": "2026-08-19",
+        "spread": 290.0,
+        "stocks": 235975.0,
+        "three_month": 13890.0
+      },
+      {
+        "cash": 14335.0,
+        "date": "2026-08-18",
+        "spread": 255.0,
+        "stocks": 223550.0,
+        "three_month": 14080.0
+      },
+      {
+        "cash": 14850.0,
+        "date": "2026-08-17",
+        "spread": 535.0,
+        "stocks": 207825.0,
+        "three_month": 14315.0
+      },
+      {
+        "cash": 14545.0,
+        "date": "2026-08-14",
+        "spread": 411.0,
+        "stocks": 204975.0,
+        "three_month": 14134.0
+      },
+      {
+        "cash": 14285.0,
+        "date": "2026-08-13",
+        "spread": 203.0,
+        "stocks": 207725.0,
+        "three_month": 14082.0
+      },
+      {
+        "cash": 14376.0,
+        "date": "2026-08-12",
+        "spread": 175.0,
+        "stocks": 212125.0,
+        "three_month": 14201.0
+      },
+      {
+        "cash": 14424.5,
+        "date": "2026-08-11",
+        "spread": 207.5,
+        "stocks": 214550.0,
+        "three_month": 14217.0
+      },
+      {
+        "cash": 14290.0,
+        "date": "2026-08-10",
+        "spread": 138.0,
+        "stocks": 218300.0,
+        "three_month": 14152.0
+      },
+      {
+        "cash": 14240.0,
+        "date": "2026-08-07",
+        "spread": 148.0,
+        "stocks": 222975.0,
+        "three_month": 14092.0
+      },
+      {
+        "cash": 14455.0,
+        "date": "2026-08-06",
+        "spread": 195.0,
+        "stocks": 226650.0,
+        "three_month": 14260.0
+      },
+      {
+        "cash": 14167.5,
+        "date": "2026-08-05",
+        "spread": 112.5,
+        "stocks": 231825.0,
+        "three_month": 14055.0
+      },
+      {
+        "cash": 14195.0,
+        "date": "2026-08-04",
+        "spread": 125.0,
+        "stocks": 238350.0,
+        "three_month": 14070.0
+      },
+      {
+        "cash": 13945.0,
+        "date": "2026-08-03",
+        "spread": 69.0,
+        "stocks": 244025.0,
+        "three_month": 13876.0
+      },
+      {
+        "cash": 13834.0,
+        "date": "2026-07-31",
+        "spread": 34.0,
+        "stocks": 249850.0,
+        "three_month": 13800.0
+      }
+    ]
+  },
+  "status_counts": {
+    "ok": 25,
+    "unavailable": 4
+  }
+}
