@@ -29,7 +29,6 @@ SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": USER_AGENT, "Accept": "*/*"})
 
 YAHOO_CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=10d"
-STOOQ_QUOTE = "https://stooq.com/q/l/?s={sym}&f=sd2t2ohlcv&h&e=csv"
 FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}"
 WESTMETALL_CU = "https://www.westmetall.com/en/markdaten.php?action=table&field=LME_Cu_cash"
 ESMIS_CATTLE = "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/cattle?latest=true"
@@ -146,18 +145,6 @@ def yahoo_last(symbol: str) -> tuple[float, str | None, str, str]:
         else None
     )
     return float(value), as_of, (meta.get("currency") or ""), url
-
-
-def stooq_last(symbol: str) -> tuple[float, str | None, str]:
-    url = STOOQ_QUOTE.format(sym=symbol)
-    rows = list(csv.DictReader(io.StringIO(http_get(url).text)))
-    if not rows:
-        raise RuntimeError("empty CSV")
-    row = rows[0]
-    close = (row.get("Close") or "").strip()
-    if not close or close.upper() == "N/D":
-        raise RuntimeError(f"no quote for symbol (Close={close!r})")
-    return parse_number(close), (row.get("Date") or None), url
 
 
 def fred_last(series_id: str) -> tuple[float, str, str]:
@@ -404,7 +391,7 @@ def collect() -> dict[str, dict]:
         "comex_copper_front_price",
         "USd/lb",
         lambda: yahoo_last("HG=F"),
-        lambda: stooq_last("hg.f"),
+        None,
     )
 
     # Beef
@@ -487,7 +474,7 @@ def collect() -> dict[str, dict]:
         "ice_cocoa_front_price",
         "USD/tonne",
         lambda: yahoo_last("CC=F"),
-        lambda: stooq_last("cc.f"),
+        None,
     )
     front_symbol, next_symbol = cocoa_contract_symbols(today)
     fields["ice_cocoa_next_price"] = cross_checked(
@@ -530,7 +517,7 @@ def collect() -> dict[str, dict]:
         "brent_front_month",
         "USD/bbl",
         lambda: yahoo_last("BZ=F"),
-        lambda: stooq_last("cb.f"),
+        None,
     )
     fields["lng_asia_monthly_index"] = cross_checked(
         "lng_asia_monthly_index",
@@ -573,9 +560,6 @@ def probe() -> int:
         ("Yahoo CC=F cocoa front", lambda: yahoo_last("CC=F")),
         ("Yahoo BZ=F Brent front", lambda: yahoo_last("BZ=F")),
         (f"Yahoo {next_cocoa} cocoa next", lambda: yahoo_last(next_cocoa)),
-        ("Stooq hg.f copper", lambda: stooq_last("hg.f")),
-        ("Stooq cc.f cocoa", lambda: stooq_last("cc.f")),
-        ("Stooq cb.f Brent", lambda: stooq_last("cb.f")),
         ("Westmetall LME copper table", westmetall_copper),
         ("Cornell ESMIS cattle release", esmis_cattle_release),
     ]
@@ -591,23 +575,27 @@ def probe() -> int:
     print(f"\n{working}/{len(checks)} probes reachable.")
     print("Declared gaps (no free source, not probed): " + ", ".join(sorted(NO_FREE_SOURCE)))
 
-    print("\nDiagnostics for failing sources:")
+    print("\nDiagnostics for USDA cattle inventory:")
     for label, url in (
-        ("stooq current form", "https://stooq.com/q/l/?s=hg.f&f=sd2t2ohlcv&h&e=csv"),
-        ("stooq minimal", "https://stooq.com/q/l/?s=hg.f&e=csv"),
-        ("stooq daily history", "https://stooq.com/q/d/l/?s=hg.f&i=d"),
-        ("stooq control (aapl.us)", "https://stooq.com/q/l/?s=aapl.us&f=sd2t2ohlcv&h&e=csv"),
-        ("stooq .pl mirror", "https://stooq.pl/q/l/?s=hg.f&f=sd2t2ohlcv&h&e=csv"),
         (
-            "esmis findByIdentifier/cattle",
-            "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/cattle",
+            "esmis concern page (Cattle)",
+            "https://usda.library.cornell.edu/concern/publications/h702q636h",
         ),
         (
-            "esmis cattle-inventory",
-            "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/cattle-inventory?latest=true",
+            "esmis findByIdentifier/h702q636h",
+            "https://usda.library.cornell.edu/api/v1/release/findByIdentifier/h702q636h?latest=true",
         ),
-        ("esmis search", "https://usda.library.cornell.edu/api/v1/search?q=cattle"),
-        ("esmis releases", "https://usda.library.cornell.edu/api/v1/releases?q=cattle"),
+        ("nass release catl0726.txt", "https://release.nass.usda.gov/reports/catl0726.txt"),
+        ("nass release catl0126.txt", "https://release.nass.usda.gov/reports/catl0126.txt"),
+        (
+            "nass todays_reports catl0726",
+            "https://www.nass.usda.gov/Publications/Todays_Reports/reports/catl0726.txt",
+        ),
+        (
+            "quickstats without key",
+            "https://quickstats.nass.usda.gov/api/api_GET/?key=NOKEY&commodity_desc=CATTLE"
+            "&year=2026&statisticcat_desc=INVENTORY&format=JSON",
+        ),
     ):
         try:
             resp = SESSION.get(url, timeout=TIMEOUT)
