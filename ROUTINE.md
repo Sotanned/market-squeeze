@@ -15,16 +15,23 @@ Work on the repository's default branch. Detect its name; do not assume it is
 
 ## STEP 1 — READ LAST WEEK
 
-List `reports/` and open the most recent `squeeze-report-*.md` by date in the
-filename. Its numbers table is the basis for this week's comparison. The file is
+List `reports/` and open the most recent `squeeze-report-*.md`, choosing it the
+same way as the data file below: highest `YYYY-MM-DD`, then highest `-N` rerun
+suffix, parsed from the filename rather than taken from a sorted list. Its
+numbers table is the basis for this week's comparison. The file is
 the source of truth, not recall. If none exists, say so in the headline and treat
 this as the baseline week with an empty comparison column. Never reconstruct last
 week's numbers from news or estimates.
 
 ## STEP 2 — READ THIS WEEK'S DATA FILE
 
-Do not fetch any figure yourself. Read the newest `data/*.json` (highest date in
-the filename; a `-2` suffix is a same-day rerun and sorts after the plain date).
+Do not fetch any figure yourself. Read the newest `data/*.json`.
+
+Pick that file by parsing filenames, not by sorting the list: take the highest
+`YYYY-MM-DD`, then among files sharing that date take the highest `-N` rerun
+suffix (a plain date with no suffix is run 1). **A plain alphabetical sort picks
+the wrong file** — `2026-09-13-2.json` sorts *before* `2026-09-13.json` — so
+never just take the last entry of a sorted list.
 
 Check its age first. **If the newest data file's `run_date` is more than eight
 days before today, stop assessing:** say in the headline that the fetcher has not
