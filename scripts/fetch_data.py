@@ -567,6 +567,14 @@ def probe() -> int:
     print(f"\n{working}/{len(checks)} probes reachable.")
     print("Declared gaps (no free source, not probed): " + ", ".join(sorted(NO_FREE_SOURCE)))
 
+    print("\nNASS heifer lines:")
+    try:
+        _, body, _ = nass_cattle_report()
+        for line in body.splitlines():
+            if re.search(r"heifer|All cattle and calves", line, re.I):
+                print(f"  | {' '.join(line.split())[:150]}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  failed: {exc}")
     return 0
 
 
