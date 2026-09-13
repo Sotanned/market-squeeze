@@ -69,41 +69,50 @@ overwritten). Every field carries:
 
 ## Field coverage
 
-Sources were selected for being free and unauthenticated. **None could be
-verified from the sandbox** — its egress policy blocks them all — so the
-confidence column reflects whether each source is structurally free, not a
-confirmed fetch. Run the workflow with `probe_only` to get ground truth from a
-runner, and update this table with the result.
+All sources below were **verified working from a GitHub runner** on 2026-09-13
+(`probe_only` run, 11/11 reachable). They cannot be reached from the report
+sandbox, which is why the fetcher exists. Re-run with `probe_only` after any
+source change to re-confirm.
 
 ### Attempted
 
-| Field | Source | Tier | Confidence |
+| Field | Source | Tier | Verified |
 |---|---|---|---|
-| `brent_spot` | FRED `DCOILBRENTEU` (EIA data, no API key) | primary | high |
-| `brent_front_month` | Yahoo `BZ=F`, cross-checked against Stooq `cb.f` | secondary | med-high |
-| `comex_copper_front_price` | Yahoo `HG=F`, cross-checked against Stooq `hg.f` | secondary | med-high |
-| `cme_live_cattle_front` | Yahoo `LE=F` | secondary | med-high |
-| `cme_feeder_cattle_front` | Yahoo `GF=F` | secondary | med-high |
-| `ice_cocoa_front_price` | Yahoo `CC=F`, cross-checked against Stooq `cc.f` | secondary | med-high |
-| `ice_cocoa_next_price` | Yahoo dated ICE symbol (e.g. `CCH27.NYB`) | secondary | medium |
-| `ice_cocoa_front_next_spread` | dated front minus dated next contract | secondary | medium |
-| `lme_copper_cash` | Westmetall LME table | secondary | medium |
-| `lme_copper_3m` | Westmetall LME table | secondary | medium |
-| `lme_copper_stocks` | Westmetall LME table | secondary | medium |
-| `lme_copper_cash_3m_spread` | computed from the two Westmetall prices | secondary | medium |
-| `usda_cattle_report_release_date` | Cornell ESMIS API | primary | medium |
-| `usda_cattle_inventory_total` | regex over the NASS text release | primary | low |
-| `usda_beef_heifer_retention` | regex over the NASS text release | primary | low |
-| `lng_asia_monthly_index` | FRED `PNGASJPUSDM` (IMF) | primary | high |
+| `brent_spot` | FRED `DCOILBRENTEU` (EIA data, no API key) | primary | yes |
+| `brent_front_month` | Yahoo `BZ=F` | secondary | yes |
+| `comex_copper_front_price` | Yahoo `HG=F` | secondary | yes |
+| `cme_live_cattle_front` | Yahoo `LE=F` | secondary | yes |
+| `cme_feeder_cattle_front` | Yahoo `GF=F` | secondary | yes |
+| `ice_cocoa_front_price` | Yahoo `CC=F` | secondary | yes |
+| `ice_cocoa_next_price` | Yahoo dated ICE symbol (e.g. `CCH27.NYB`) | secondary | yes |
+| `ice_cocoa_front_next_spread` | dated front minus dated next contract | secondary | yes |
+| `lme_copper_cash` | Westmetall LME table | secondary | yes |
+| `lme_copper_3m` | Westmetall LME table | secondary | yes |
+| `lme_copper_stocks` | Westmetall LME table | secondary | yes |
+| `lme_copper_cash_3m_spread` | computed from the two Westmetall prices | secondary | yes |
+| `usda_cattle_report_release_date` | NASS `catlMMYY.txt` release header | primary | yes |
+| `usda_cattle_inventory_total` | regex over the NASS text release | primary | yes |
+| `usda_beef_heifer_retention` | regex over the NASS text release | primary | yes |
+| `lng_asia_monthly_index` | FRED `PNGASJPUSDM` (IMF) | primary | yes, but see below |
 
 Caveats worth knowing when reading a report:
 
+- **Nothing is cross-checked.** Stooq was the intended second source; runner
+  diagnostics proved it unusable (its `/q/l/` endpoint 404s even for a control
+  symbol, and `/q/d/l/` serves a JavaScript bot challenge). Every field is
+  therefore single-source, and `status: conflict` cannot currently occur. The
+  comparison logic stays in place for when a second source is added.
+- **`lng_asia_monthly_index` is effectively dead weight.** It is a monthly
+  series and its latest observation is already over a month old, so the routine
+  will treat it as stale. With JKM proprietary, there is no usable Asian LNG
+  coverage today.
 - Cattle prices are Yahoo last-traded prices, **not** official CME settlements.
 - LME figures are Westmetall's republication; the LME itself has no free feed.
 - `brent_spot` is the official EIA series and lags by roughly a week;
   `brent_front_month` is the futures price and is current.
-- USDA numeric extraction is regex-based and fails to `unavailable` rather than
-  guessing when the release layout changes. Units are as printed in the release.
+- USDA extraction is regex over a hard-wrapped text release, so it collapses
+  whitespace before matching. It fails to `unavailable` rather than guessing.
+  Units are taken from the release's own wording.
 
 ### Currently unavailable — open gaps
 

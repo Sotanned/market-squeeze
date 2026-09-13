@@ -226,29 +226,24 @@ def nass_cattle_report(today: datetime | None = None) -> tuple[str, str, str]:
 
 def parse_cattle_numbers(text: str) -> dict[str, tuple[float, str]]:
     """Pull headline inventory figures out of the NASS Cattle text release."""
+    # The release hard-wraps mid-phrase ("Beef replacement\nheifers, at 3.80
+    # million head"), so match against whitespace-collapsed text.
+    flat = " ".join(text.split())
     patterns = {
-        "total": (
-            r"All cattle and calves[^.]{0,160}?totaled\s+([\d.,]+)\s*(million|thousand)?",
-            r"All cattle and calves[^\n\d]{0,40}([\d,]{3,})()",
-        ),
-        "heifers": (
-            r"Beef (?:cow )?replacement heifers[^.]{0,160}?(?:totaled|at|were)\s+"
-            r"([\d.,]+)\s*(million|thousand)?",
-            r"Beef (?:cow )?replacement heifers[^\n\d]{0,40}([\d,]{3,})()",
-        ),
+        "total": r"All cattle and calves in the United States[^.]{0,120}?"
+        r"totaled\s+([\d.,]+)\s*(million|thousand)?",
+        "heifers": r"Beef replacement heifers,?\s*at\s+([\d.,]+)\s*(million|thousand)?",
     }
     scales = {"million": "million head", "thousand": "thousand head"}
     found: dict[str, tuple[float, str]] = {}
-    for key, candidates in patterns.items():
-        for pattern in candidates:
-            match = re.search(pattern, text, re.I)
-            if match:
-                scale = (match.group(2) or "").lower()
-                found[key] = (
-                    parse_number(match.group(1)),
-                    scales.get(scale, "head (unit as printed in release, verify)"),
-                )
-                break
+    for key, pattern in patterns.items():
+        match = re.search(pattern, flat, re.I)
+        if match:
+            scale = (match.group(2) or "").lower()
+            found[key] = (
+                parse_number(match.group(1)),
+                scales.get(scale, "head (unit as printed in release, verify)"),
+            )
     if not found:
         raise RuntimeError("headline inventory lines not found in text release")
     return found
@@ -567,14 +562,6 @@ def probe() -> int:
     print(f"\n{working}/{len(checks)} probes reachable.")
     print("Declared gaps (no free source, not probed): " + ", ".join(sorted(NO_FREE_SOURCE)))
 
-    print("\nNASS heifer lines:")
-    try:
-        _, body, _ = nass_cattle_report()
-        for line in body.splitlines():
-            if re.search(r"heifer|All cattle and calves", line, re.I):
-                print(f"  | {' '.join(line.split())[:150]}")
-    except Exception as exc:  # noqa: BLE001
-        print(f"  failed: {exc}")
     return 0
 
 
