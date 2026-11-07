@@ -4,7 +4,7 @@ Data file: `data/2026-11-07.json` (run_date 2026-11-07, 0 days old). Comparison 
 
 ## 1. Headline
 
-Copper moved: LME stocks rebuilt +15.6% in the last week to 316,675 t while cash fell 3.4%, so the call flips from Tightening to Easing; beef, cocoa and Gulf energy are Unclear, and six of the 29 tracked fields (COMEX stocks, ICE cocoa stocks, ICCO balance, JKM, the Asia LNG index, and Hormuz transits at 13 days old) are unavailable or stale.
+Copper moved: LME stocks rebuilt +15.6% in the last week to 316,675 t while cash fell 3.4%, so the call flips from Tightening to Easing; beef, cocoa and Gulf energy are Unclear, and five of the 29 tracked fields (COMEX stocks, ICE cocoa stocks, ICCO balance, JKM, and the Asia LNG index) are unavailable or stale.
 
 ## 2. Verdict
 
